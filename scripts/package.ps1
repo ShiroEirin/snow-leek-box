@@ -46,7 +46,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $root $name) -Destination (Join-Path $staging $name) -Force
   }
 
-  $zipName = "snow-stock-panel-$Version.zip"
+  $zipName = "snow-leek-box-v$Version.zip"
   $zipPath = Join-Path $OutDir $zipName
   if (Test-Path $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
 

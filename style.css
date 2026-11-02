@@ -1059,6 +1059,13 @@
   gap: 4px;
 }
 
+/* 空仓但有历史已实现盈亏时的只读小行 */
+.sp-pos-realized-only {
+  padding: 4px 9px;
+  background: transparent;
+  border-style: dashed;
+}
+
 /* ---------------- v1.3.1：行内记仓 / 表单头 ---------------- */
 
 .sp-td-actions {

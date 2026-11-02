@@ -1569,19 +1569,19 @@ function TradeBox(props) {
   }
 
   if (!position) {
+    // 空仓：不渲染持仓条（行内「记仓」已是唯一记仓入口）；
+    // 但若历史上有过已实现盈亏（已清仓），保留一行只读小字提示。
+    const realized = holding ? toNum(holding.realizedPnl) : null;
+    if (!realized) return null;
     return h(
       "div",
-      { className: "sp-pos" },
-      h("button", { className: "sp-link-btn", onClick: () => open("buy") }, "+ 记录持仓"),
-      h("span", { className: "sp-dim sp-small" }, "录入成本后显示浮动盈亏与已实现盈亏"),
-      holding && toNum(holding.realizedPnl)
-        ? h(
-            "span",
-            { className: "sp-pos-item " + trendClass(holding.realizedPnl) },
-            h("span", { className: "sp-dim" }, "已实现 "),
-            h("span", { className: "sp-mono" }, fmtMoney(holding.realizedPnl, currency)),
-          )
-        : null,
+      { className: "sp-pos sp-pos-realized-only" },
+      h(
+        "span",
+        { className: "sp-pos-item " + trendClass(realized) },
+        h("span", { className: "sp-dim" }, "已实现 "),
+        h("span", { className: "sp-mono" }, (realized > 0 ? "+" : "") + fmtMoney(realized, currency)),
+      ),
     );
   }
 
