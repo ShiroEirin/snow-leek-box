@@ -1,0 +1,18 @@
+# 构建产物与本地文件
+dist/
+*.local-backup
+*.bak
+
+# 本地持仓还原脚本（含个人持仓数据，不公开）
+scripts/restore-funds.mjs
+
+# 系统文件
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo

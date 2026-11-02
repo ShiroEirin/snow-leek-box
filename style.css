@@ -1,0 +1,1095 @@
+/* 韭菜盒子 — 面板样式
+ * 只定义 sp- 前缀作用域，不覆盖宿主变量；颜色继承 currentColor + 半透明层，
+ * 让深色 / 浅色主题都能正常显示。 */
+
+/* ---------------- 设计令牌 ---------------- */
+
+.sp-root {
+  --sp-fg: currentColor;
+  --sp-fg-dim: rgba(128, 128, 128, 0.62);
+  --sp-fg-faint: rgba(128, 128, 128, 0.42);
+  --sp-line: rgba(128, 128, 128, 0.18);
+  --sp-line-strong: rgba(128, 128, 128, 0.3);
+  --sp-surface-1: rgba(128, 128, 128, 0.045);
+  --sp-surface-2: rgba(128, 128, 128, 0.09);
+  --sp-accent: #4f8dff;
+  --sp-accent-soft: rgba(79, 141, 255, 0.13);
+  --sp-accent-line: rgba(79, 141, 255, 0.4);
+  --sp-up: #e5484d;
+  --sp-down: #2f9e44;
+  --sp-warn: #e37318;
+  --sp-radius-sm: 7px;
+  --sp-radius: 9px;
+  --sp-space: 12px;
+  --sp-space-sm: 8px;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: inherit;
+  box-sizing: border-box;
+}
+
+.sp-root *,
+.sp-root *::before,
+.sp-root *::after {
+  box-sizing: border-box;
+}
+
+/* ---------------- 页签 ---------------- */
+
+.sp-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--sp-line);
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.sp-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  padding: 5px 12px;
+  border-radius: var(--sp-radius-sm);
+  cursor: pointer;
+  opacity: 0.58;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+
+.sp-tab:hover {
+  opacity: 0.88;
+}
+
+.sp-tab-on {
+  opacity: 1;
+  font-weight: 600;
+  background: var(--sp-surface-2);
+}
+
+.sp-tab:focus-visible,
+.sp-range-btn:focus-visible,
+.sp-btn:focus-visible,
+.sp-link-btn:focus-visible,
+.sp-icon-btn:focus-visible,
+.sp-tr-click:focus-visible,
+.sp-suggest-item:focus-visible {
+  outline: 1.5px solid var(--sp-accent-line);
+  outline-offset: -1px;
+}
+
+/* ---------------- 工具条（资源库） ---------------- */
+
+.sp-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--sp-line);
+}
+
+.sp-toolbar-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sp-title {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sp-hint {
+  font-size: 11px;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sp-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.sp-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  opacity: 0.72;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sp-check input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.sp-time {
+  font-size: 11px;
+  color: var(--sp-fg-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---------------- 按钮 ---------------- */
+
+.sp-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--sp-line-strong);
+  background: var(--sp-surface-1);
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 11px;
+  border-radius: var(--sp-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.sp-btn:hover:not(:disabled) {
+  background: var(--sp-surface-2);
+}
+
+.sp-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sp-btn-primary {
+  border-color: var(--sp-accent-line);
+  background: var(--sp-accent-soft);
+}
+
+.sp-link-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  color: var(--sp-fg-dim);
+  padding: 2px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.sp-link-btn:hover {
+  color: inherit;
+  background: var(--sp-surface-2);
+}
+
+.sp-danger {
+  color: var(--sp-up) !important;
+}
+
+.sp-icon-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--sp-line-strong);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface-1);
+  color: inherit;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.sp-icon-btn:hover:not(:disabled) {
+  background: var(--sp-surface-2);
+}
+
+.sp-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.sp-icon {
+  width: 13px;
+  height: 13px;
+  display: block;
+}
+
+.sp-color-btn {
+  margin-left: auto;
+}
+
+/* ---------------- 内容区 ---------------- */
+
+.sp-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 12px 16px;
+}
+
+.sp-error {
+  flex: 0 0 auto;
+  margin: 8px 12px 0;
+  padding: 7px 10px;
+  font-size: 11.5px;
+  border-radius: var(--sp-radius-sm);
+  border: 1px solid rgba(229, 72, 77, 0.35);
+  background: rgba(229, 72, 77, 0.09);
+  color: var(--sp-up);
+}
+
+.sp-empty {
+  padding: 36px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--sp-fg-faint);
+}
+
+/* ---------------- 图表头（hero 价格区） ---------------- */
+
+.sp-chart-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 14px 2px;
+}
+
+.sp-chart-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sp-chart-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sp-chart-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sp-fg-dim);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-chart-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sp-chart-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.sp-chart-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding-top: 4px;
+}
+
+.sp-session {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--sp-fg-dim);
+  white-space: nowrap;
+}
+
+.sp-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.sp-dot-inline {
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* ---------------- 区间 / 模式切换 ---------------- */
+
+.sp-range {
+  display: inline-flex;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--sp-line-strong);
+  border-radius: var(--sp-radius-sm);
+  background: var(--sp-surface-1);
+}
+
+.sp-range-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--sp-fg-dim);
+  transition: background 100ms ease, color 100ms ease;
+}
+
+.sp-range-btn:hover {
+  color: inherit;
+}
+
+.sp-range-on {
+  color: inherit;
+  background: var(--sp-accent-soft);
+  font-weight: 600;
+}
+
+/* ---------------- 图表 ---------------- */
+
+.sp-chart {
+  flex: 0 0 auto;
+  padding: 2px 12px 4px;
+}
+
+.sp-chart-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.sp-chart-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sp-chart-grid {
+  stroke: var(--sp-line);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.sp-chart-base {
+  stroke: rgba(128, 128, 128, 0.45);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.sp-chart-cursor {
+  stroke: rgba(128, 128, 128, 0.55);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.sp-chart-axis {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--sp-fg-faint);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-chart-tip {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--sp-surface-2);
+  font-size: 10px;
+  pointer-events: none;
+}
+
+.sp-chart-tip-static {
+  background: transparent;
+}
+
+.sp-chart-tip-date {
+  color: var(--sp-fg-dim);
+}
+
+.sp-chart-tip-val {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-chart-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 2px 0;
+  font-size: 10px;
+}
+
+.sp-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 12px;
+  border: 1px dashed var(--sp-line-strong);
+  border-radius: var(--sp-radius);
+  font-size: 11px;
+  color: var(--sp-fg-faint);
+}
+
+/* ---------------- 持仓块 ---------------- */
+
+.sp-pos {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 0 12px 6px;
+  padding: 7px 9px;
+  border: 1px solid var(--sp-line);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-1);
+  font-size: 11px;
+}
+
+.sp-pos-edit {
+  gap: 6px;
+}
+
+.sp-pos-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.sp-pos-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sp-fg-dim);
+  letter-spacing: 0.04em;
+}
+
+.sp-pos-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.sp-input-mini {
+  flex: 0 1 110px;
+  min-width: 80px;
+  padding: 4px 7px;
+  font-size: 11px;
+}
+
+/* ---------------- 汇总条（卡片化 + 左对齐） ---------------- */
+
+.sp-summary {
+  flex: 0 0 auto;
+  margin: 0 12px 6px;
+  border: 1px solid var(--sp-accent-line);
+  border-radius: var(--sp-radius);
+  background: var(--sp-accent-soft);
+  padding: 5px 9px;
+}
+
+.sp-summary-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 2px 0;
+  font-size: 11px;
+}
+
+.sp-summary-cur {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sp-fg-dim);
+  letter-spacing: 0.06em;
+  min-width: 32px;
+}
+
+.sp-summary-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+/* ---------------- 列表 ---------------- */
+
+.sp-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 2px 12px 8px;
+}
+
+.sp-section {
+  margin-bottom: 14px;
+}
+
+.sp-section-head {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--sp-fg-faint);
+  padding: 6px 4px 4px;
+  letter-spacing: 0.05em;
+}
+
+.sp-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.sp-tr {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px;
+  border-radius: var(--sp-radius-sm);
+  border-bottom: 1px solid var(--sp-line);
+}
+
+.sp-tr:not(.sp-th):hover {
+  background: var(--sp-surface-1);
+}
+
+.sp-th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-size: 10.5px;
+  color: var(--sp-fg-dim);
+  border-bottom: 1px solid var(--sp-line-strong);
+  backdrop-filter: blur(8px);
+  background: inherit;
+}
+
+.sp-tr-click {
+  cursor: pointer;
+}
+
+.sp-tr-on {
+  background: var(--sp-accent-soft);
+  box-shadow: inset 3px 0 0 var(--sp-accent);
+}
+
+.sp-tr-on .sp-strong {
+  font-weight: 600;
+}
+
+.sp-table-funds.sp-table-pos .sp-tr {
+  grid-template-columns: minmax(0, 2fr) 0.9fr 0.85fr 1.3fr 96px;
+}
+
+.sp-table-stocks.sp-table-pos .sp-tr {
+  grid-template-columns: minmax(0, 1.6fr) 0.9fr 0.85fr 1.3fr 96px;
+}
+
+.sp-td {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-td-name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sp-td-actions {
+  text-align: right;
+}
+
+.sp-strong {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-mono {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-dim {
+  color: var(--sp-fg-dim);
+  font-size: 11px;
+}
+
+.sp-small {
+  font-size: 11px;
+}
+
+/* 涨跌：默认红涨绿跌；切到绿涨红跌时由 .sp-green-up 覆盖 */
+.sp-up {
+  color: var(--sp-up);
+}
+
+.sp-down {
+  color: var(--sp-down);
+}
+
+.sp-flat {
+  color: var(--sp-fg-dim);
+}
+
+.sp-green-up .sp-up {
+  color: var(--sp-down);
+}
+
+.sp-green-up .sp-down {
+  color: var(--sp-up);
+}
+
+/* 涨跌徽章：淡色底药丸（对齐支付宝/雪球） */
+.sp-change-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.sp-badge-up {
+  color: var(--sp-up);
+  background: color-mix(in srgb, var(--sp-up) 12%, transparent);
+}
+
+.sp-badge-down {
+  color: var(--sp-down);
+  background: color-mix(in srgb, var(--sp-down) 12%, transparent);
+}
+
+.sp-badge-flat {
+  color: var(--sp-fg-dim);
+  background: var(--sp-surface-2);
+}
+
+.sp-green-up .sp-badge-up {
+  color: var(--sp-down);
+  background: color-mix(in srgb, var(--sp-down) 12%, transparent);
+}
+
+.sp-green-up .sp-badge-down {
+  color: var(--sp-up);
+  background: color-mix(in srgb, var(--sp-up) 12%, transparent);
+}
+
+/* 列表现价：加粗一档，让价格成为行的视觉锚点 */
+.sp-price-cell {
+  font-weight: 600;
+}
+
+/* ---------------- 表单 ---------------- */
+
+.sp-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 2px 0;
+}
+
+.sp-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px dashed var(--sp-line-strong);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-1);
+}
+
+.sp-form-stack {
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+
+.sp-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.sp-form-stack .sp-form-actions {
+  margin-left: 0;
+  justify-content: flex-end;
+}
+
+.sp-input {
+  flex: 1 1 160px;
+  min-width: 0;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  background: var(--sp-surface-1);
+  border: 1px solid var(--sp-line-strong);
+  border-radius: var(--sp-radius-sm);
+  padding: 5px 9px;
+  outline: none;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.sp-input:focus {
+  border-color: var(--sp-accent-line);
+  background: var(--sp-surface-2);
+}
+
+.sp-input::placeholder {
+  color: inherit;
+  opacity: 0.4;
+}
+
+.sp-input-search {
+  flex: 0 1 200px;
+  min-width: 120px;
+}
+
+.sp-textarea {
+  min-height: 70px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ---------------- 分段控件 ---------------- */
+
+.sp-seg {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.sp-seg-btn {
+  appearance: none;
+  border: 1px solid var(--sp-line-strong);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 12px;
+  border-radius: var(--sp-radius-sm);
+  cursor: pointer;
+  color: var(--sp-fg-dim);
+}
+
+.sp-seg-on {
+  color: inherit;
+  border-color: var(--sp-accent-line);
+  background: var(--sp-accent-soft);
+}
+
+/* ---------------- 搜索候选 ---------------- */
+
+.sp-search {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sp-suggest {
+  display: flex;
+  flex-direction: column;
+  max-height: 168px;
+  overflow: auto;
+  border: 1px solid var(--sp-line-strong);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-1);
+}
+
+.sp-suggest-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 9px;
+  border: 0;
+  border-bottom: 1px solid var(--sp-line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sp-suggest-item:last-child {
+  border-bottom: 0;
+}
+
+.sp-suggest-item:hover {
+  background: var(--sp-accent-soft);
+}
+
+/* ---------------- 资源卡片 ---------------- */
+
+.sp-card {
+  border: 1px solid var(--sp-line);
+  border-radius: var(--sp-radius);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--sp-surface-1);
+  transition: background 120ms ease;
+}
+
+.sp-card:hover {
+  background: var(--sp-surface-2);
+}
+
+.sp-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sp-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sp-card-ops {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.sp-badge {
+  flex: 0 0 auto;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--sp-line-strong);
+  color: var(--sp-fg-dim);
+}
+
+.sp-card-url {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--sp-fg-dim);
+  word-break: break-all;
+}
+
+.sp-card-content {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--sp-fg-dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 140px;
+  overflow: auto;
+}
+
+.sp-link {
+  color: var(--sp-accent);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-link:hover {
+  text-decoration: underline;
+}
+
+.sp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.sp-tag {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--sp-surface-2);
+  color: var(--sp-fg-dim);
+}
+
+/* ---------------- v1.3.0：组合总览 / 骨架屏 / 折叠 ---------------- */
+
+.sp-portfolio {
+  flex: 0 0 auto;
+  margin: 0 12px 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--sp-line);
+  border-radius: var(--sp-radius);
+  background: var(--sp-surface-1);
+}
+
+.sp-portfolio-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.sp-portfolio-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sp-portfolio-label {
+  font-size: 10px;
+  color: var(--sp-fg-dim);
+}
+
+.sp-portfolio-value {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.sp-portfolio-note {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--sp-fg-faint);
+}
+
+.sp-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.sp-empty-icon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+.sp-empty-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sp-empty-hint {
+  font-size: 11px;
+  color: var(--sp-fg-dim);
+  max-width: 240px;
+}
+
+.sp-pos-toggle {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: var(--sp-fg-dim);
+  font-size: 10px;
+  padding: 0 2px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.sp-pos-toggle:hover {
+  color: inherit;
+}
+
+.sp-pos-collapsed {
+  padding: 5px 9px;
+}
+
+.sp-pos-collapsed .sp-pos-item {
+  gap: 4px;
+}
+
+/* ---------------- v1.3.1：行内记仓 / 表单头 ---------------- */
+
+.sp-td-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.sp-row-trade {
+  color: var(--sp-accent);
+  font-weight: 600;
+}
+
+.sp-row-trade:hover {
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent);
+}
+
+.sp-pos-formhead {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.sp-pos-formname {
+  font-size: 11.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
