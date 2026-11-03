@@ -12,9 +12,10 @@
   --sp-line-strong: rgba(128, 128, 128, 0.3);
   --sp-surface-1: rgba(128, 128, 128, 0.045);
   --sp-surface-2: rgba(128, 128, 128, 0.09);
-  --sp-accent: #4f8dff;
-  --sp-accent-soft: rgba(79, 141, 255, 0.13);
-  --sp-accent-line: rgba(79, 141, 255, 0.4);
+  /* 强调色改中性（作者建议6：除 K 线外不用蓝色），跟随当前前景色做高对比强调 */
+  --sp-accent: currentColor;
+  --sp-accent-soft: rgba(128, 128, 128, 0.12);
+  --sp-accent-line: rgba(128, 128, 128, 0.5);
   --sp-up: #e5484d;
   --sp-down: #2f9e44;
   --sp-warn: #e37318;
@@ -140,6 +141,24 @@
 .sp-check input {
   margin: 0;
   cursor: pointer;
+}
+
+/* 刷新间隔下拉（作者建议4） */
+.sp-refresh-select {
+  appearance: none;
+  font: inherit;
+  font-size: 11px;
+  color: inherit;
+  background: var(--sp-surface-1);
+  border: 1px solid var(--sp-line-strong);
+  border-radius: var(--sp-radius-sm);
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.sp-refresh-select:focus-visible {
+  outline: 1.5px solid var(--sp-accent-line);
+  outline-offset: -1px;
 }
 
 .sp-time {
@@ -595,7 +614,6 @@
   align-items: center;
   gap: 8px;
   padding: 6px 6px;
-  border-radius: var(--sp-radius-sm);
   border-bottom: 1px solid var(--sp-line);
 }
 
@@ -618,9 +636,10 @@
   cursor: pointer;
 }
 
+/* 选中行：左侧竖条 + 极浅中性底，不用蓝色（作者建议6），圆角与竖条不再冲突 */
 .sp-tr-on {
-  background: var(--sp-accent-soft);
-  box-shadow: inset 3px 0 0 var(--sp-accent);
+  background: var(--sp-surface-2);
+  box-shadow: inset 3px 0 0 currentColor;
 }
 
 .sp-tr-on .sp-strong {
@@ -745,7 +764,7 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 12px 2px 0;
+  padding: 12px 12px 12px;
 }
 
 .sp-form {
@@ -765,6 +784,13 @@
   align-items: stretch;
   margin-top: 0;
   margin-bottom: 14px;
+}
+
+/* 表单内输入框限高：避免 flex 拉伸把输入框撑成巨大块（作者建议3） */
+.sp-form-stack .sp-input {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 0;
 }
 
 .sp-form-actions {
@@ -813,161 +839,6 @@
   line-height: 1.5;
 }
 
-/* ---------------- 分段控件 ---------------- */
-
-.sp-seg {
-  display: inline-flex;
-  gap: 4px;
-}
-
-.sp-seg-btn {
-  appearance: none;
-  border: 1px solid var(--sp-line-strong);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 12px;
-  padding: 3px 12px;
-  border-radius: var(--sp-radius-sm);
-  cursor: pointer;
-  color: var(--sp-fg-dim);
-}
-
-.sp-seg-on {
-  color: inherit;
-  border-color: var(--sp-accent-line);
-  background: var(--sp-accent-soft);
-}
-
-/* ---------------- 搜索候选 ---------------- */
-
-.sp-search {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.sp-suggest {
-  display: flex;
-  flex-direction: column;
-  max-height: 168px;
-  overflow: auto;
-  border: 1px solid var(--sp-line-strong);
-  border-radius: var(--sp-radius);
-  background: var(--sp-surface-1);
-}
-
-.sp-suggest-item {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 9px;
-  border: 0;
-  border-bottom: 1px solid var(--sp-line);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 11px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.sp-suggest-item:last-child {
-  border-bottom: 0;
-}
-
-.sp-suggest-item:hover {
-  background: var(--sp-accent-soft);
-}
-
-/* ---------------- 资源卡片 ---------------- */
-
-.sp-card {
-  border: 1px solid var(--sp-line);
-  border-radius: var(--sp-radius);
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  background: var(--sp-surface-1);
-  transition: background 120ms ease;
-}
-
-.sp-card:hover {
-  background: var(--sp-surface-2);
-}
-
-.sp-card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.sp-card-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.sp-card-ops {
-  display: flex;
-  gap: 4px;
-  flex: 0 0 auto;
-}
-
-.sp-badge {
-  flex: 0 0 auto;
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 999px;
-  border: 1px solid var(--sp-line-strong);
-  color: var(--sp-fg-dim);
-}
-
-.sp-card-url {
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--sp-fg-dim);
-  word-break: break-all;
-}
-
-.sp-card-content {
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--sp-fg-dim);
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-height: 140px;
-  overflow: auto;
-}
-
-.sp-link {
-  color: var(--sp-accent);
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sp-link:hover {
-  text-decoration: underline;
-}
-
-.sp-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 8px;
-}
-
-.sp-tag {
-  font-size: 10px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--sp-surface-2);
-  color: var(--sp-fg-dim);
 }
 
 /* ---------------- v1.3.0：组合总览 / 骨架屏 / 折叠 ---------------- */

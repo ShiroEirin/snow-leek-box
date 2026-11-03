@@ -27,7 +27,6 @@ const KEYS = {
   funds: "funds.v1",
   stocks: "stocks.v1",
   crypto: "crypto.v1",
-  library: "library.v1",
   holdings: "holdings.v1",
   settings: "settings.v1",
 };
@@ -79,6 +78,17 @@ const FUND_CONCURRENCY = 3;
 const FUND_PAGE_SIZE = 20;
 const RANGES = [20, 60, 120];
 const INTRADAY_TTL_MS = 60 * 1000;
+
+// 可选刷新间隔（作者建议4：最低可到 1s）；值即毫秒，0 = 关闭自动刷新。
+const REFRESH_OPTIONS = [
+  { value: 0, label: "关闭" },
+  { value: 1000, label: "1s" },
+  { value: 5000, label: "5s" },
+  { value: 30000, label: "30s" },
+  { value: 60000, label: "1min" },
+  { value: 300000, label: "5min" },
+];
+const DEFAULT_REFRESH_MS = 30000;
 
 const KLINE_BASES = ["https://ifzq.gtimg.cn", "https://web.ifzq.gtimg.cn"];
 const SEARCH_BASE = "https://smartbox.gtimg.cn";
@@ -242,10 +252,6 @@ function errText(error) {
   return String(error);
 }
 
-function uid() {
-  return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
 /** 生成 CSV 并触发下载。 */
 function downloadCsv(filename, headers, rows) {
   const escape = (value) => {
@@ -265,14 +271,6 @@ function downloadCsv(filename, headers, rows) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
-
-function parseTags(text) {
-  return String(text || "")
-    .split(/[,，;；\s]+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .slice(0, 8);
 }
 
 function normalizeSymbol(raw) {
@@ -1798,6 +1796,7 @@ function MarketView(props) {
   const [error, setError] = useState("");
   const [lastAt, setLastAt] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [refreshMs, setRefreshMs] = useState(DEFAULT_REFRESH_MS);
   const [adding, setAdding] = useState(false);
   const [draftSymbol, setDraftSymbol] = useState("");
   const [draftName, setDraftName] = useState("");
@@ -1822,6 +1821,10 @@ function MarketView(props) {
       .then((saved) => {
         if (!alive || !saved) return;
         if (typeof saved.autoRefresh === "boolean") setAutoRefresh(saved.autoRefresh);
+        if (typeof saved.refreshMs === "number" && REFRESH_OPTIONS.some((o) => o.value === saved.refreshMs)) {
+          setRefreshMs(saved.refreshMs);
+          setAutoRefresh(saved.refreshMs > 0);
+        }
         if (RANGES.indexOf(saved[props.rangeKey]) !== -1) setRange(saved[props.rangeKey]);
         const savedMode = saved[props.chartModeKey];
         if (savedMode === "intraday" || savedMode === "daily") setChartMode(savedMode);
@@ -1896,7 +1899,10 @@ function MarketView(props) {
     : null;
   const pollMs = session && session.isOpen ? STOCK_OPEN_MS : STOCK_CLOSED_MS;
 
-  useAutoRefresh(R, refreshRef, isActive, autoRefresh, props.fixedPollMs || pollMs);
+  // 用户选择的间隔优先；基金固定 5min（净值每日一更，无意义高频）
+  const effectivePollMs = props.fixedPollMs || refreshMs || pollMs;
+
+  useAutoRefresh(R, refreshRef, isActive, autoRefresh, effectivePollMs);
 
   useEffect(() => {
     if (!selectedDef) return undefined;
@@ -1957,6 +1963,23 @@ function MarketView(props) {
       .getJson(KEYS.settings, {})
       .then((saved) =>
         api.storage.setJson(KEYS.settings, Object.assign({}, saved || {}, { autoRefresh: checked })),
+      )
+      .catch(() => {});
+  };
+
+  const changeRefreshMs = (value) => {
+    const ms = Number(value);
+    if (!REFRESH_OPTIONS.some((o) => o.value === ms)) return;
+    setRefreshMs(ms);
+    const on = ms > 0;
+    setAutoRefresh(on);
+    api.storage
+      .getJson(KEYS.settings, {})
+      .then((saved) =>
+        api.storage.setJson(
+          KEYS.settings,
+          Object.assign({}, saved || {}, { refreshMs: ms, autoRefresh: on }),
+        ),
       )
       .catch(() => {});
   };
@@ -2383,12 +2406,19 @@ function MarketView(props) {
           h(
             "label",
             { className: "sp-check" },
-            h("input", {
-              type: "checkbox",
-              checked: autoRefresh,
-              onChange: (event) => toggleAuto(event.target.checked),
-            }),
-            h("span", null, "自动刷新"),
+            h("span", null, "刷新"),
+            h(
+              "select",
+              {
+                className: "sp-refresh-select",
+                value: String(refreshMs),
+                onChange: (event) => changeRefreshMs(event.target.value),
+                "aria-label": "刷新间隔",
+              },
+              REFRESH_OPTIONS.map((opt) =>
+                h("option", { key: opt.value, value: String(opt.value) }, opt.label),
+              ),
+            ),
           ),
           h("span", { className: "sp-dim sp-small" }, props.pollHint),
           h(
@@ -2729,281 +2759,9 @@ function LeekPanel(props) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 资源库面板                                                          */
-/* ------------------------------------------------------------------ */
-
-const LIB_TYPES = [
-  { id: "link", label: "链接" },
-  { id: "note", label: "笔记" },
-  { id: "file", label: "本地文件" },
-];
-
-function LibraryPanel(props) {
-  const R = window.SnowAppPlugin.React;
-  const h = R.createElement;
-  const { useState, useEffect } = R;
-  const api = props.api;
-
-  const [items, setItems] = useState(null);
-  const [query, setQuery] = useState("");
-  const [form, setForm] = useState(null);
-  const [error, setError] = useState("");
-  const [pendingDelete, setPendingDelete] = useState("");
-
-  useEffect(() => {
-    let alive = true;
-    api.storage
-      .getJson(KEYS.library, null)
-      .then((saved) => {
-        if (alive) setItems(Array.isArray(saved) ? saved : []);
-      })
-      .catch(() => {
-        if (alive) setItems([]);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [api]);
-
-  const persist = (list) => {
-    setItems(list);
-    api.storage.setJson(KEYS.library, list).catch((err) => setError(errText(err)));
-  };
-
-  const openNew = () => {
-    setError("");
-    setForm({ id: "", title: "", type: "link", url: "", content: "", tags: "" });
-  };
-
-  const openEdit = (item) => {
-    setError("");
-    setForm({
-      id: item.id,
-      title: item.title || "",
-      type: item.type || "link",
-      url: item.url || "",
-      content: item.content || "",
-      tags: (item.tags || []).join(", "),
-    });
-  };
-
-  const save = () => {
-    if (!form || !items) return;
-    const title = String(form.title || "").trim();
-    if (!title) {
-      setError("标题不能为空");
-      return;
-    }
-    const now = Date.now();
-    const tags = parseTags(form.tags);
-    let next;
-    if (form.id) {
-      next = items.map((item) =>
-        item.id === form.id
-          ? Object.assign({}, item, {
-              title: title,
-              type: form.type,
-              url: String(form.url || "").trim(),
-              content: form.content || "",
-              tags: tags,
-              updatedAt: now,
-            })
-          : item,
-      );
-    } else {
-      next = [
-        {
-          id: uid(),
-          title: title,
-          type: form.type,
-          url: String(form.url || "").trim(),
-          content: form.content || "",
-          tags: tags,
-          createdAt: now,
-          updatedAt: now,
-        },
-      ].concat(items);
-    }
-    setError("");
-    persist(next);
-    setForm(null);
-  };
-
-  const remove = (id) => {
-    if (!items) return;
-    persist(items.filter((item) => item.id !== id));
-    setPendingDelete("");
-  };
-
-  const toolbar = h(
-    "div",
-    { className: "sp-toolbar" },
-    h(
-      "div",
-      { className: "sp-toolbar-main" },
-      h("span", { className: "sp-title" }, "资源库"),
-      h("span", { className: "sp-hint" }, items ? items.length + " 条 · 本地存储" : "加载中…"),
-    ),
-    h(
-      "div",
-      { className: "sp-toolbar-actions" },
-      h("input", {
-        className: "sp-input sp-input-search",
-        placeholder: "搜索标题 / 标签 / 内容",
-        value: query,
-        onChange: (event) => setQuery(event.target.value),
-      }),
-      h(
-        "button",
-        {
-          className: "sp-btn sp-btn-primary",
-          onClick: openNew,
-        },
-        h(Icon, { d: ICONS.plus }),
-        "新建",
-      ),
-    ),
-  );
-
-  if (!items) {
-    return h("div", { className: "sp-root" }, toolbar, renderEmpty(h, "读取本地资源…"));
-  }
-
-  const keyword = query.trim().toLowerCase();
-  const visible = keyword
-    ? items.filter((item) => {
-        const haystack = [item.title, item.url, item.content, (item.tags || []).join(" "), item.type]
-          .join(" ")
-          .toLowerCase();
-        return haystack.indexOf(keyword) !== -1;
-      })
-    : items;
-
-  const renderCard = (item) =>
-    h(
-      "div",
-      { className: "sp-card", key: item.id },
-      h(
-        "div",
-        { className: "sp-card-head" },
-        h(
-          "div",
-          { className: "sp-card-title" },
-          item.type === "link" && item.url
-            ? h("a", { className: "sp-link", href: item.url, target: "_blank", rel: "noreferrer" }, item.title)
-            : h("span", { className: "sp-strong" }, item.title),
-          h(
-            "span",
-            { className: "sp-badge" },
-            (LIB_TYPES.find((type) => type.id === item.type) || LIB_TYPES[0]).label,
-          ),
-        ),
-        h(
-          "div",
-          { className: "sp-card-ops" },
-          h("button", { className: "sp-link-btn", onClick: () => openEdit(item) }, "编辑"),
-          pendingDelete === item.id
-            ? h("button", { className: "sp-link-btn sp-danger", onClick: () => remove(item.id) }, "确认删除")
-            : h("button", { className: "sp-link-btn", onClick: () => setPendingDelete(item.id) }, "删除"),
-        ),
-      ),
-      item.url ? h("div", { className: "sp-card-url sp-mono" }, item.url) : null,
-      item.content ? h("div", { className: "sp-card-content" }, item.content) : null,
-      (item.tags || []).length
-        ? h(
-            "div",
-            { className: "sp-tags" },
-            (item.tags || []).map((tag, index) => h("span", { className: "sp-tag", key: "t" + index }, tag)),
-          )
-        : null,
-    );
-
-  const formView = form
-    ? h(
-        "div",
-        { className: "sp-form sp-form-stack" },
-        h("input", {
-          className: "sp-input",
-          placeholder: "标题（必填）",
-          value: form.title,
-          onChange: (event) => setForm(Object.assign({}, form, { title: event.target.value })),
-          autoFocus: true,
-        }),
-        h(
-          "div",
-          { className: "sp-seg" },
-          LIB_TYPES.map((type) =>
-            h(
-              "button",
-              {
-                key: type.id,
-                className: "sp-seg-btn" + (form.type === type.id ? " sp-seg-on" : ""),
-                onClick: () => setForm(Object.assign({}, form, { type: type.id })),
-              },
-              type.label,
-            ),
-          ),
-        ),
-        form.type === "link"
-          ? h("input", {
-              className: "sp-input",
-              placeholder: "https://…",
-              value: form.url,
-              onChange: (event) => setForm(Object.assign({}, form, { url: event.target.value })),
-            })
-          : null,
-        form.type === "file"
-          ? h("input", {
-              className: "sp-input",
-              placeholder: "本地路径，如 D:/docs/xxx.pdf",
-              value: form.url,
-              onChange: (event) => setForm(Object.assign({}, form, { url: event.target.value })),
-            })
-          : null,
-        h("textarea", {
-          className: "sp-input sp-textarea",
-          placeholder: form.type === "note" ? "笔记内容" : "备注（可空）",
-          value: form.content,
-          onChange: (event) => setForm(Object.assign({}, form, { content: event.target.value })),
-        }),
-        h("input", {
-          className: "sp-input",
-          placeholder: "标签，逗号分隔，如 研究, 工具",
-          value: form.tags,
-          onChange: (event) => setForm(Object.assign({}, form, { tags: event.target.value })),
-          onKeyDown: (event) => {
-            if (event.key === "Enter") save();
-            if (event.key === "Escape") setForm(null);
-          },
-        }),
-        h(
-          "div",
-          { className: "sp-form-actions" },
-          h("button", { className: "sp-btn sp-btn-primary", onClick: save }, "保存"),
-          h("button", { className: "sp-btn", onClick: () => setForm(null) }, "取消"),
-        ),
-      )
-    : null;
-
-  return h(
-    "div",
-    { className: "sp-root" },
-    toolbar,
-    error ? renderError(h, error) : null,
-    h(
-      "div",
-      { className: "sp-body" },
-      formView,
-      visible.length
-        ? visible.map(renderCard)
-        : renderEmpty(h, items.length ? "没有匹配的条目" : "还没有内容，点右上角「+ 新建」加一条吧"),
-    ),
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* 路由                                                                */
 /* ------------------------------------------------------------------ */
+
 
 /** 迁移旧 id 存储后再渲染面板，保证持仓/自选不丢。 */
 function RootWithMigration(props) {
@@ -3028,7 +2786,6 @@ function RootWithMigration(props) {
     return h("div", { className: "sp-root" }, h("div", { className: "sp-empty" }, "加载中…"));
   }
   const panelId = props.panelId || "leek";
-  if (panelId === "library") return h(LibraryPanel, props);
   return h(LeekPanel, props);
 }
 
